@@ -1,0 +1,37 @@
+---
+title: Text for RBZD
+format: docx
+bibliography: references.bib
+csl: nature.csl
+---
+
+# NTDs table
+
+Twenty-one diseases or groups of diseases are listed by the World Health Organisation (WHO) as Neglected Tropical Diseases (NTDs). None of these are generally considered rodent-borne zoonotic diseases. Despite this, there is some evidence for an important role of rodents in transmission of these diseases that warrants further investigation. For each of the NTDs the known or potential role of rodents in transmission is described. For example, Chagas disease, caused by the parasite *Trypanosoma cruzi*, vectored by triatomine bugs, may be affected by rodent populations in endemic areas where rodents are competent hosts of the parasite and provide blood meals to the vector [@hernandez2018frequency; @nunes2013chagas]. However, rodents may be more peripherally involved in transmission of zoonotic NTDs, Echinococcosis is caused by transmission of eggs from definitive hosts (i.e., dogs) to an an aberrant intermediate host (i.e., humans). Rodents may act as intermediate hosts and direct predation by canids or feeding on offal from human hunted rodents may increase the prevalence of this pathogen in endemic regions, indirectly contributing to the human health burden of this NTD [@stieger2002spatial].
+
+| NTD | Rodent associations | Reference |
+|--------------------|--------------------|-----------------|
+| Buruli Ulcer (*Mycobacterium ulcerans*) | Transmission route unknown. Potential involvement of small rodents. |[@dassi2015detection;@hammoudi2019disseminated] |
+| Chagas disease (*Trypanosoma cruzii*)  | Rodents are known hosts of *T. cruzi* and provide bloodmeals to Triatoma insects, the vectors of Chagas disease. | [@hernandez2018frequency; @velazquez2022review] |
+| Dengue and Chikungunya  | Dengue viraemia has been reported in synanthropic rodents, contribution to transmission is unknown. Potential involvement of rodents in sylvatic maintenance of Chikungunya but limited evidence.  | [@gwee2021animals; @ng2010tracing] |
+| Dracunculiasis  | Rodents can be experimentally infected, potential paratenic hosts. | [@cairncross2002dracunculiasis]                                             |
+| Echinococcosis (*Echinococcus granulosus* and *Echinococcus multilocularis*)  | Primary transmission is assumed to be through contact with pet dogs or other canids. Rodents are important intermediate hosts of *Echinococcus spp.* contributing to prevalence in zoonotic hosts. | [@rausch1951hydatid; @stieger2002spatial] |
+| Foodborne trematodiasis | Rodents are potential hosts of *Paragonimus spp.*, *Opisthorchis spp.* and *Clonorchis spp.*, their role in transmission is unknown. | [@fan1994experimental; @tangkawattana2018reservoir; @qian2016clonorchiasis] |
+| Human African trypanosomiasis (*Typanosoma brucei gambiense* and *T. b. rhoesiense*) | Rodents have been found to be infected with parasites, their role in transmission is unknown.  | [@mehlitz2019elimination] |
+| Leishmaniasis (*Leishmania spp.*) | Rodents have been found have infected in endemic areas, onward infectiousness to Phlebotomus vectors is mixed. | [@sadlova2019host; @alcover2021leishmaniosis]  |
+| Leprosy (*Mycobacterium leprae*)  | Red squirrels in the UK have been found to be infected, limited testing in other rodent species. | [@meredith2014leprosy; @ploemacher2020reservoirs] |
+| Lymphatic filariasis (*Wuchereria bancrofti*, *Brugia malayi* and *B. timori*)   | No known non-human hosts of *W. bancrofti*. *B. malayi* can be transmitted by rodents, their role in maintenance is unknown. | [@nelson1965filarial; @ash1970development]                                  |
+| Mycetoma | Not known to be zoonotic. Potential involvement of ticks in transmission in Sudan. | [@fahal2023mycetoma; @azrag2021possible] |
+| Chromoblastomycosis  | Not known to be zoonotic. Animal associated outbreaks have been reported in Brazil. | [@rodrigues2016sporothrix] |
+| Noma | Not considered an infectious disease, caused by commensal bacteria. |  |
+| Onchocerciasis (*Onchocerca volvulus*) | Not known to be zoonotic. | [@toe1997vector] |
+| Rabies | Rodents not considered to be important vectors. Outbreaks in rodent populations are assumed animal-to-animal spillover during epizootic periods. | [@fitzpatrick2014rabies] |
+| Scabies (*Sarcoptes scabiei* ) and other ectoparasites | No zoonotic transmission of scabies. Ectoparasites are common in synanthropic rodents.   | [@ho2021pests]  |
+| Schistosomiasis (*Schistosoma mansoni*) | Rodents are potentially important reservoir hosts and sites of hybridisation. | [@duplantier2006rodents; @catalano2020multihost] |
+| Soil-transmitted helminthiasis | Rodents may contribute to Ascaris transmission as intermediate hosts. Rodents are reservoirs of Toxocara species. | [@tiner1953fatalities; @hildebrand2009preliminary] |
+| Snakebite envenoming | Rodent abundance may support higher snake populations but do not directly contribute to human incidents of envenoming. | [@wch_echis_2024] |
+| Taeniasis/cysticercosis (*Taenia solium*) | Rodents not involved in transmission. | [@flisser2010taenia] |
+| Trachoma (*Chlamydia trachomatis*) | Not known to be zoonotic. | [@rodolakis2010zoonotic] |
+| Yaws (*Treponema pallidum*) | Rodents not involved in transmission | [@chuma2018widespread] |
+
+# References
