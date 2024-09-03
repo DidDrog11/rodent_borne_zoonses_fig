@@ -8,6 +8,7 @@ pkgs =
     "ggridges",
     "here",
     "hrbrthemes",
+    "patchwork",
     "readxl",
     "svglite",
     "tidyverse"
@@ -18,78 +19,14 @@ pacman::p_load(pkgs, character.only = T)
 
 # Prepare data ---------------------------------------------------------------
 
-disease_timelines <- read_xlsx(here("data", "timelines_data_v4.xlsx")) %>%
+disease_timelines <- read_xlsx(here("data", "timelines_data_v5.xlsx")) %>%
   filter(str_detect(category, "Oldest infection|Transmission|Pathogen"))
 
-yersinia_publications <- read_csv(here("data", "plague_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Plague")
-yersinia_rodent_publications <- read_csv(here("data", "plague_rodent_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Plague") %>%
-  rename("rodent_count" = Count)
-yersinia <- full_join(yersinia_publications, yersinia_rodent_publications, by = c("Year", "disease")) %>%
-  mutate(rodent_count = replace_na(rodent_count, 0),
-         Count = replace_na(Count, 0),
-         Count = Count - rodent_count) %>%
-  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
+search_date = "2024-09-03"
 
-leptospirosis_publications <- read_csv(here("data", "leptospirosis_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Leptospirosis")
-leptospirosis_rodent_publications <- read_csv(here("data", "leptospirosis_rodent_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Leptospirosis") %>%
-  rename("rodent_count" = Count)
-leptospirosis <- full_join(leptospirosis_publications, leptospirosis_rodent_publications, by = c("Year", "disease")) %>%
-  mutate(rodent_count = replace_na(rodent_count, 0),
-         Count = replace_na(Count, 0),
-         Count = Count - rodent_count) %>%
-  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
-
-toxoplasmosis_publications <- read_csv(here("data", "toxoplasmosis_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Toxoplasmosis")
-toxoplasmosis_rodent_publications <- read_csv(here("data", "toxoplasmosis_rodent_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Toxoplasmosis") %>%
-  rename("rodent_count" = Count)
-toxoplasmosis <- full_join(toxoplasmosis_publications, toxoplasmosis_rodent_publications, by = c("Year", "disease")) %>%
-  mutate(rodent_count = replace_na(rodent_count, 0),
-         Count = replace_na(Count, 0),
-         Count = Count - rodent_count) %>%
-  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
-
-lyme_publications <- read_csv(here("data", "lyme_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Lyme borreliosis")
-lyme_rodent_publications <- read_csv(here("data", "lyme_rodent_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Lyme borreliosis") %>%
-  rename("rodent_count" = Count)
-lyme <- full_join(lyme_publications, lyme_rodent_publications, by = c("Year", "disease")) %>%
-  mutate(rodent_count = replace_na(rodent_count, 0),
-         Count = replace_na(Count, 0),
-         Count = Count - rodent_count) %>%
-  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
-
-lassa_publications <- read_csv(here("data", "lassa_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Lassa fever")
-lassa_rodent_publications <- read_csv(here("data", "lassa_rodent_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Lassa fever") %>%
-  rename("rodent_count" = Count)
-lassa <- full_join(lassa_publications, lassa_rodent_publications, by = c("Year", "disease")) %>%
-  mutate(rodent_count = replace_na(rodent_count, 0),
-         Count = replace_na(Count, 0),
-         Count = Count - rodent_count) %>%
-  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
-
-schistosomiasis_publications <- read_csv(here("data", "schistosomiasis_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Schistosomiasis")
-schistosomiasis_rodent_publications <- read_csv(here("data", "schistosomiasis_rodent_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
-  mutate(disease = "Schistosomiasis") %>%
-  rename("rodent_count" = Count)
-schistosomiasis <- full_join(schistosomiasis_publications, schistosomiasis_rodent_publications, by = c("Year", "disease")) %>%
-  mutate(rodent_count = replace_na(rodent_count, 0),
-         Count = replace_na(Count, 0),
-         Count = Count - rodent_count) %>%
-  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
-
-hantavirus_publications <- read_csv(here("data", "hantavirus_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
+hantavirus_publications <- read_csv(here("data", paste0("hantavirus_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
   mutate(disease = "Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome")
-hantavirus_rodent_publications <- read_csv(here("data", "hantavirus_rodent_pubmed_2024-01-18.csv"), show_col_types = FALSE, skip = 1) %>%
+hantavirus_rodent_publications <- read_csv(here("data", paste0("hantavirus_rodent_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
   mutate(disease = "Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome") %>%
   rename("rodent_count" = Count)
 hantavirus <- full_join(hantavirus_publications, hantavirus_rodent_publications, by = c("Year", "disease")) %>%
@@ -98,18 +35,62 @@ hantavirus <- full_join(hantavirus_publications, hantavirus_rodent_publications,
          Count = Count - rodent_count) %>%
   pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
 
-combined_data <- bind_rows(yersinia,
-          leptospirosis,
-          toxoplasmosis,
-          lyme,
-          lassa,
-          schistosomiasis,
-          hantavirus) %>%
-  full_join(disease_timelines, by = c("Year", "disease")) %>%
+lassa_publications <- read_csv(here("data", paste0("lassa_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Lassa fever")
+lassa_rodent_publications <- read_csv(here("data", paste0("lassa_rodent_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Lassa fever") %>%
+  rename("rodent_count" = Count)
+lassa <- full_join(lassa_publications, lassa_rodent_publications, by = c("Year", "disease")) %>%
+  mutate(rodent_count = replace_na(rodent_count, 0),
+         Count = replace_na(Count, 0),
+         Count = Count - rodent_count) %>%
+  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
+
+lyme_publications <- read_csv(here("data", paste0("lyme_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Lyme borreliosis")
+lyme_rodent_publications <- read_csv(here("data", paste0("lyme_rodent_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Lyme borreliosis") %>%
+  rename("rodent_count" = Count)
+lyme <- full_join(lyme_publications, lyme_rodent_publications, by = c("Year", "disease")) %>%
+  mutate(rodent_count = replace_na(rodent_count, 0),
+         Count = replace_na(Count, 0),
+         Count = Count - rodent_count) %>%
+  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
+
+mpox_publications <- read_csv(here("data", paste0("mpox_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "mpox")
+mpox_rodent_publications <- read_csv(here("data", paste0("mpox_rodent_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "mpox") %>%
+  rename("rodent_count" = Count)
+mpox <- full_join(mpox_publications, mpox_rodent_publications, by = c("Year", "disease")) %>%
+  mutate(rodent_count = replace_na(rodent_count, 0),
+         Count = replace_na(Count, 0),
+         Count = Count - rodent_count) %>%
+  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
+
+yersinia_publications <- read_csv(here("data", paste0("plague_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Plague")
+yersinia_rodent_publications <- read_csv(here("data", paste0("plague_rodent_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Plague") %>%
+  rename("rodent_count" = Count)
+yersinia <- full_join(yersinia_publications, yersinia_rodent_publications, by = c("Year", "disease")) %>%
+  mutate(rodent_count = replace_na(rodent_count, 0),
+         Count = replace_na(Count, 0),
+         Count = Count - rodent_count) %>%
+  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
+
+combined_data <- bind_rows(hantavirus,
+                           lassa,
+                           lyme,
+                           mpox,
+                           yersinia) %>%
+  full_join(disease_timelines %>%
+              filter(disease %in% c("Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome", "Lassa fever", "Lyme borreliosis", "mpox", "Plague")),
+            by = c("Year", "disease")) %>%
   group_by(disease) %>%
   fill(region, .direction = "downup") %>%
   mutate(region = factor(region, levels = c("Global", "Northern Hemisphere", "Tropical/Sub-tropical", "West Africa")),
-         disease = factor(disease, levels = c("Plague", "Leptospirosis", "Toxoplasmosis", "Lyme borreliosis", "Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome", "Schistosomiasis", "Lassa fever")),
+         disease = factor(disease, levels = c("Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome", "Lassa fever", "Lyme borreliosis", "mpox", "Plague")),
          Count = replace_na(Count, 0)) 
 
 split_data <- combined_data %>%
@@ -219,13 +200,15 @@ hanta <- timelines$`Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary 
 
 lassa <- timelines$`Lassa fever`
 
-lepto <- timelines$Leptospirosis
+lyme <- timelines$`Lyme borreliosis`
+
+mpox <- timelines$mpox
 
 plague <- timelines$Plague
 
 v2 <- bind_rows(hanta %>%
-            mutate(disease = "HFRS/HPS"), lassa, lepto, plague) %>%
-  filter(Year <= 2023) %>%
+            mutate(disease = "HFRS/HPS"), lassa, lyme, mpox, plague) %>%
+  filter(Year <= 2024) %>%
   mutate(search = case_when(search == "Count" ~ "All publications",
                             search == "rodent_count" ~ "Rodent publications")) %>%
   ggplot(aes(x = Year, fill = search, y = disease)) +
@@ -243,7 +226,77 @@ v2 <- bind_rows(hanta %>%
        fill = "Search") +
   theme_minimal() +
   theme(axis.line.x = element_line()) +
-  coord_cartesian(ylim = c(1.4, 4.5),
-                  xlim = c(1880, 2024))
+  coord_cartesian(ylim = c(1.4, 5.5),
+                  xlim = c(1880, 2025))
 
 ggsave(v2, filename = here("output", "v2.png"), width = 12)
+
+
+# Version 3 ---------------------------------------------------------------
+
+# List of diseases to iterate over
+diseases <- c("HFRS/HPS", "Lassa fever", "Lyme borreliosis", "mpox", "Plague")
+
+# Combine data into one data frame
+v3_data <- bind_rows(
+  hanta %>% mutate(disease = "HFRS/HPS"), 
+  lassa %>% mutate(disease = "Lassa fever"), 
+  lyme %>% mutate(disease = "Lyme borreliosis"), 
+  mpox %>% mutate(disease = "mpox"), 
+  plague %>% mutate(disease = "Plague")
+) %>%
+  filter(Year <= 2024) %>%
+  mutate(search = case_when(
+    search == "Count" ~ "All publications",
+    search == "rodent_count" ~ "Rodent publications"
+  ))
+
+# Create an empty list to store plots
+plot_list <- list()
+
+# Loop through each disease to create individual plots
+for (disease in diseases) {
+  # Filter data for the current disease
+  disease_data <- v3_data %>%
+    filter(disease == !!disease)
+  
+  # Generate the plot for the current disease
+  p <- ggplot(disease_data, aes(x = Year, fill = search, y = disease)) +
+    geom_density_ridges(
+      data = disease_data %>% drop_na(search), 
+      stat = "identity", 
+      scale = 1, 
+      aes(height = Count), 
+      panel_scaling = FALSE
+    ) +
+    geom_text_repel(
+      data = disease_data %>% 
+        drop_na(label) %>%
+        distinct(Year, disease, category, label), 
+      aes(x = Year, y = disease, label = str_wrap(label, width = 18)),
+      size = 3,
+      nudge_y = 0.2,
+      inherit.aes = FALSE,
+      direction = "both"
+    ) +
+    labs(title = disease) +
+    theme_minimal() +
+    theme(
+      axis.line.x = element_line(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      legend.position = "none", # Remove individual legends
+      legend.title = element_blank()
+    ) +
+    coord_cartesian(xlim = c(1880, 2025))
+  
+  # Store the plot in the list
+  plot_list[[disease]] <- p
+}
+
+# Combine all plots into a single figure with a shared legend
+v3 <- wrap_plots(plot_list, ncol = 1) + 
+  plot_layout(guides = "collect") & 
+  theme(legend.position = "bottom") # Position the combined legend at the bottom
+
+ggsave(v3, filename = here("output", "v3.png"), height = 14, width = 16)
