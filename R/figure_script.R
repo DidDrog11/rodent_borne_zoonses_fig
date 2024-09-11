@@ -19,8 +19,8 @@ pacman::p_load(pkgs, character.only = T)
 
 # Prepare data ---------------------------------------------------------------
 
-disease_timelines <- read_xlsx(here("data", "timelines_data_v5.xlsx")) %>%
-  filter(str_detect(category, "Oldest infection|Transmission|Pathogen"))
+disease_timelines <- read_xlsx(here("data", "timelines_data_v6.xlsx")) %>%
+  filter(str_detect(category, "Oldest infection|Host|Pathogen"))
 
 search_date = "2024-09-03"
 
@@ -251,52 +251,71 @@ v3_data <- bind_rows(
     search == "rodent_count" ~ "Rodent publications"
   ))
 
-# Create an empty list to store plots
-plot_list <- list()
-
-# Loop through each disease to create individual plots
-for (disease in diseases) {
+# Create the function to generate the plot for each disease
+generate_plot <- function(disease) {
+  
   # Filter data for the current disease
   disease_data <- v3_data %>%
     filter(disease == !!disease)
   
+  # Extract labels
+  oldest_infection <- disease_data %>%
+    filter(category == "Oldest infection")
+  
+  # Extract dates for pathogens and hosts
+  line_dates <- disease_data %>% 
+    filter(str_detect(category, "Pathogen|Host")) %>%
+    distinct(Year, category, disease, .keep_all = TRUE)
+  
   # Generate the plot for the current disease
-  p <- ggplot(disease_data, aes(x = Year, fill = search, y = disease)) +
-    geom_density_ridges(
-      data = disease_data %>% drop_na(search), 
-      stat = "identity", 
-      scale = 1, 
-      aes(height = Count), 
-      panel_scaling = FALSE
+  p <- ggplot(disease_data, aes(x = Year, fill = search, y = Count)) +
+    geom_area(
+      data = disease_data %>% drop_na(search),
+      position = "identity",
+      show.legend = TRUE  # Show only fill legend
     ) +
+    geom_vline(
+      data = line_dates, 
+      aes(xintercept = Year, linetype = category), 
+      lwd = 1
+    )  +
     geom_text_repel(
-      data = disease_data %>% 
-        drop_na(label) %>%
-        distinct(Year, disease, category, label), 
-      aes(x = Year, y = disease, label = str_wrap(label, width = 18)),
+      data = oldest_infection, 
+      aes(x = Year, y = Count, label = str_wrap(label, width = 18)),
       size = 3,
       nudge_y = 0.2,
       inherit.aes = FALSE,
       direction = "both"
     ) +
-    labs(title = disease) +
+    scale_y_log10() +
+    labs(title = disease,
+         y = "Number of publications (log scale)") +
+    scale_linetype_manual(
+      values = c("Pathogen" = "dashed", "Host" = "dotdash"), # Matching category names from line_dates
+      labels = c("Pathogen" = "Pathogen discovered", "Host" = "Host(s) discovered"), # Custom labels for the legend
+      guide = guide_legend(order = 1, override.aes = list(color = "black")) # Ensure correct line types
+    ) +
     theme_minimal() +
     theme(
       axis.line.x = element_line(),
-      axis.title.y = element_blank(),
-      axis.text.y = element_blank(),
-      legend.position = "none", # Remove individual legends
-      legend.title = element_blank()
-    ) +
+      legend.position = "none", # Remove individual legends for subplots
+      legend.title = element_blank(),
+      legend.background = element_rect(fill = "lightgrey", colour = "black")) +
+    guides(linetype = guide_legend(override.aes = list(fill = c(NA, NA)))) +
     coord_cartesian(xlim = c(1880, 2025))
   
-  # Store the plot in the list
-  plot_list[[disease]] <- p
+  return(p)
 }
+
+# Apply the function across all diseases and store the plots in a list
+plot_list <- lapply(diseases, generate_plot)
 
 # Combine all plots into a single figure with a shared legend
 v3 <- wrap_plots(plot_list, ncol = 1) + 
-  plot_layout(guides = "collect") & 
-  theme(legend.position = "bottom") # Position the combined legend at the bottom
+  plot_layout(guides = "collect", axis_titles = "collect") & 
+  theme(
+    legend.position = "bottom", # Position the combined legend at the bottom
+    legend.title = element_blank()
+  )
 
-ggsave(v3, filename = here("output", "v3.png"), height = 14, width = 16)
+ggsave(v3, filename = here("output", "v3.png"), height = 18, width = 16)
