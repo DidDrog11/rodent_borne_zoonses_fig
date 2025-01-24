@@ -22,7 +22,7 @@ pacman::p_load(pkgs, character.only = T)
 disease_timelines <- read_xlsx(here("data", "timelines_data_v6.xlsx")) %>%
   filter(str_detect(category, "Oldest infection|Host|Pathogen"))
 
-search_date = "2024-09-03"
+search_date = "2024-12-12"
 
 hantavirus_publications <- read_csv(here("data", paste0("hantavirus_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
   mutate(disease = "Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome")
@@ -79,18 +79,31 @@ yersinia <- full_join(yersinia_publications, yersinia_rodent_publications, by = 
          Count = Count - rodent_count) %>%
   pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
 
+tbev_publications <- read_csv(here("data", paste0("tbe_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Tick-borne Encephalitis")
+tbev_rodent_publications <- read_csv(here("data", paste0("tbe_rodent_pubmed_", search_date, ".csv")), show_col_types = FALSE, skip = 1) %>%
+  mutate(disease = "Tick-borne Encephalitis") %>%
+  rename("rodent_count" = Count)
+tbe <- full_join(tbev_publications, tbev_rodent_publications, by = c("Year", "disease")) %>%
+  mutate(rodent_count = replace_na(rodent_count, 0),
+         Count = replace_na(Count, 0),
+         Count = Count - rodent_count) %>%
+  pivot_longer(cols = c("Count", "rodent_count"), names_to = "search", values_to = "Count")
+
+
 combined_data <- bind_rows(hantavirus,
                            lassa,
                            lyme,
                            mpox,
-                           yersinia) %>%
+                           yersinia,
+                           tbe) %>%
   full_join(disease_timelines %>%
-              filter(disease %in% c("Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome", "Lassa fever", "Lyme borreliosis", "mpox", "Plague")),
+              filter(disease %in% c("Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome", "Lassa fever", "Lyme borreliosis", "mpox", "Plague", "Tick-borne Encephalitis")),
             by = c("Year", "disease")) %>%
   group_by(disease) %>%
   fill(region, .direction = "downup") %>%
-  mutate(region = factor(region, levels = c("Global", "Northern Hemisphere", "Tropical/Sub-tropical", "West Africa")),
-         disease = factor(disease, levels = c("Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome", "Lassa fever", "Lyme borreliosis", "mpox", "Plague")),
+  mutate(region = factor(region, levels = c("Global", "Europe/Asia", "Northern Hemisphere", "Tropical/Sub-tropical", "West Africa")),
+         disease = factor(disease, levels = c("Haemorrhagic Fever with Renal Syndrome/Hantavirus Pulmonary Syndrome", "Lassa fever", "Lyme borreliosis", "mpox", "Plague", "Tick-borne Encephalitis")),
          Count = replace_na(Count, 0)) 
 
 split_data <- combined_data %>%
@@ -183,11 +196,11 @@ names(split_data) <- lapply(split_data, function(x) { paste(unique(x$disease)) }
 # Version 2 ---------------------------------------------------------------
 
 timelines <- lapply(split_data, function(x) {
-  
+
   # Expand years and set pub counts as 0
   first_infection <- min(x %>%
                            pull(Year))
-  
+
   expand_years <- tibble(Year = rep(seq(first_infection, max(combined_data$Year) - 1, 1), each = 2),
                          search = rep(c("Count", "rodent_count"), times = length(seq(first_infection, max(combined_data$Year) - 1, 1)))) %>%
     full_join(x, by = c("Year", "search")) %>%
@@ -206,36 +219,38 @@ mpox <- timelines$mpox
 
 plague <- timelines$Plague
 
-v2 <- bind_rows(hanta %>%
-            mutate(disease = "HFRS/HPS"), lassa, lyme, mpox, plague) %>%
-  filter(Year <= 2024) %>%
-  mutate(search = case_when(search == "Count" ~ "All publications",
-                            search == "rodent_count" ~ "Rodent publications")) %>%
-  ggplot(aes(x = Year, fill = search, y = disease)) +
-  geom_density_ridges(data = . %>%
-                        drop_na(search), stat = "identity", scale = 1, aes(height = Count),
-                      panel_scaling = FALSE) +
-  geom_text_repel(data = . %>% 
-                     drop_na(label) %>%
-                     distinct(Year, disease, category, label), aes(x = Year, y = disease, label = str_wrap(label, width = 18)),
-                   size = 2,
-                   nudge_y = 0.2,
-                   inherit.aes = FALSE,
-                   direction = "both") +
-  labs(y = element_blank(),
-       fill = "Search") +
-  theme_minimal() +
-  theme(axis.line.x = element_line()) +
-  coord_cartesian(ylim = c(1.4, 5.5),
-                  xlim = c(1880, 2025))
+tbe <- timelines$`Tick-borne Encephalitis`
 
-ggsave(v2, filename = here("output", "v2.png"), width = 12)
+# v2 <- bind_rows(hanta %>%
+#             mutate(disease = "HFRS/HPS"), lassa, lyme, mpox, plague) %>%
+#   filter(Year <= 2024) %>%
+#   mutate(search = case_when(search == "Count" ~ "All publications",
+#                             search == "rodent_count" ~ "Rodent publications")) %>%
+#   ggplot(aes(x = Year, fill = search, y = disease)) +
+#   geom_density_ridges(data = . %>%
+#                         drop_na(search), stat = "identity", scale = 1, aes(height = Count),
+#                       panel_scaling = FALSE) +
+#   geom_text_repel(data = . %>%
+#                      drop_na(label) %>%
+#                      distinct(Year, disease, category, label), aes(x = Year, y = disease, label = str_wrap(label, width = 18)),
+#                    size = 2,
+#                    nudge_y = 0.2,
+#                    inherit.aes = FALSE,
+#                    direction = "both") +
+#   labs(y = element_blank(),
+#        fill = "Search") +
+#   theme_minimal() +
+#   theme(axis.line.x = element_line()) +
+#   coord_cartesian(ylim = c(1.4, 5.5),
+#                   xlim = c(1880, 2025))
+# 
+# ggsave(v2, filename = here("output", "v2.png"), width = 12)
 
 
 # Version 3 ---------------------------------------------------------------
 
 # List of diseases to iterate over
-diseases <- c("HFRS/HPS", "Lassa fever", "Lyme borreliosis", "mpox", "Plague")
+diseases <- c("Lyme borreliosis", "Plague", "Tick-borne Encephalitis", "Lassa fever", "mpox", "HFRS/HPS")
 
 # Combine data into one data frame
 v3_data <- bind_rows(
@@ -243,7 +258,8 @@ v3_data <- bind_rows(
   lassa %>% mutate(disease = "Lassa fever"), 
   lyme %>% mutate(disease = "Lyme borreliosis"), 
   mpox %>% mutate(disease = "mpox"), 
-  plague %>% mutate(disease = "Plague")
+  plague %>% mutate(disease = "Plague"),
+  tbe %>% mutate(disease = "Tick-borne Encephalitis")
 ) %>%
   filter(Year <= 2024) %>%
   mutate(search = case_when(
@@ -252,7 +268,7 @@ v3_data <- bind_rows(
   ))
 
 # Create the function to generate the plot for each disease
-generate_plot <- function(disease) {
+generate_plot <- function(disease, log_scale = TRUE) {
   
   # Filter data for the current disease
   disease_data <- v3_data %>%
@@ -260,62 +276,105 @@ generate_plot <- function(disease) {
   
   # Extract labels
   oldest_infection <- disease_data %>%
-    filter(category == "Oldest infection")
+    filter(category == "Oldest infection") %>%
+    arrange(Year, search) %>%
+    slice(1)
+  
+  oldest_infection <- oldest_infection %>%
+    mutate(
+      is_text = disease %in% c("Lyme borreliosis", "Plague"),
+      start_period = ifelse(!is_text, Year - 1, NA),  # Starting point for segment
+      end_period = ifelse(!is_text, Year + 1, NA) # Ending point for segment
+    )
   
   # Extract dates for pathogens and hosts
   line_dates <- disease_data %>% 
     filter(str_detect(category, "Pathogen|Host")) %>%
+    group_by(category) %>%
+    arrange(Year) %>%
+    slice(1) %>%
     distinct(Year, category, disease, .keep_all = TRUE)
   
-  # Generate the plot for the current disease
+  if(line_dates$Year[line_dates$category == "Host"] == line_dates$Year[line_dates$category == "Pathogen"]) line_dates$Year[line_dates$category == "Host"] <- line_dates$Year[line_dates$category == "Host"] + 0.5
+  
+  # Dynamically set y-axis label
+  y_label <- if (log_scale) "Number of publications (log scale)" else "Number of publications"
+  
+  # Generate the plot
   p <- ggplot(disease_data, aes(x = Year, fill = search, y = Count)) +
     geom_area(
       data = disease_data %>% drop_na(search),
       position = "identity",
-      show.legend = TRUE  # Show only fill legend
+      show.legend = TRUE
     ) +
     geom_vline(
       data = line_dates, 
       aes(xintercept = Year, linetype = category), 
       lwd = 1
-    )  +
+    ) +
+    geom_rect(
+      data = oldest_infection %>% filter(!is_text),
+      aes(xmin = start_period, xmax = end_period, ymin = 1, ymax = Inf),
+      fill = "lightblue", 
+      alpha = 0.5, 
+      inherit.aes = FALSE
+    ) +
     geom_text_repel(
-      data = oldest_infection, 
-      aes(x = Year, y = Count, label = str_wrap(label, width = 18)),
-      size = 3,
-      nudge_y = 0.2,
+      data = oldest_infection %>% filter(is_text), 
+      aes(x = Year, y = Count + 0.5, label = str_wrap(label, width = 18)),
+      size = 3.5,
+      nudge_y = 2.5,
+      min.segment.length = 0,
       inherit.aes = FALSE,
       direction = "both"
     ) +
-    scale_y_log10() +
-    labs(title = disease,
-         y = "Number of publications (log scale)") +
-    scale_linetype_manual(
-      values = c("Pathogen" = "dashed", "Host" = "dotdash"), # Matching category names from line_dates
-      labels = c("Pathogen" = "Pathogen discovered", "Host" = "Host(s) discovered"), # Custom labels for the legend
-      guide = guide_legend(order = 1, override.aes = list(color = "black")) # Ensure correct line types
+    labs(
+      title = disease,
+      y = y_label
     ) +
+    scale_linetype_manual(
+      values = c("Pathogen" = "solid", "Host" = "dotdash"),
+      labels = c("Pathogen" = "Pathogen discovered", "Host" = "Host(s) discovered"),
+      guide = guide_legend(order = 1, override.aes = list(color = "black"))
+    ) +
+    scale_fill_viridis_d() +
     theme_minimal() +
     theme(
       axis.line.x = element_line(),
-      legend.position = "none", # Remove individual legends for subplots
+      legend.position = "none",
       legend.title = element_blank(),
-      legend.background = element_rect(fill = "lightgrey", colour = "black")) +
+      legend.background = element_rect(fill = "lightgrey", colour = "black")
+    ) +
     guides(linetype = guide_legend(override.aes = list(fill = c(NA, NA)))) +
     coord_cartesian(xlim = c(1880, 2025))
+  
+  # Add y-axis scale conditionally
+  if (log_scale) {
+    p <- p + scale_y_log10()
+  }
   
   return(p)
 }
 
 # Apply the function across all diseases and store the plots in a list
-plot_list <- lapply(diseases, generate_plot)
+plot_list_log <- lapply(diseases, generate_plot, log_scale = TRUE)
+plot_list_count <- lapply(diseases, generate_plot, log_scale = FALSE)
 
 # Combine all plots into a single figure with a shared legend
-v3 <- wrap_plots(plot_list, ncol = 1) + 
+v4_log <- wrap_plots(plot_list_log, ncol = 1) + 
   plot_layout(guides = "collect", axis_titles = "collect") & 
   theme(
     legend.position = "bottom", # Position the combined legend at the bottom
     legend.title = element_blank()
   )
 
-ggsave(v3, filename = here("output", "v3.png"), height = 18, width = 16)
+ggsave(v4_log, filename = here("output", "v4_log.png"), height = 12, width = 8)
+
+v4_count <- wrap_plots(plot_list_count, ncol = 1) + 
+  plot_layout(guides = "collect", axis_titles = "collect") & 
+  theme(
+    legend.position = "bottom", # Position the combined legend at the bottom
+    legend.title = element_blank()
+  )
+
+ggsave(v4_count, filename = here("output", "v4_count.png"), height = 11, width = 7)
